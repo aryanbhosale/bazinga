@@ -5,18 +5,17 @@ import useProperties from "../hooks/useProperties";
 import { Property } from "../utils/types";
 import Navbar from "../components/Navbar";
 import MapView from "../components/MapView";
-import Sidebar from "../components/Sidebar";
+import PropertyList from "../components/PropertyList";
 import PropertyDetailsModal from "../components/PropertyDetailsModal";
 import AddEditPropertyModal from "../components/AddEditPropertyModal";
 
-// We'll store the user's filter selections here:
 export interface FilterState {
   forRent: boolean;
   minPrice: number;
   maxPrice: number;
-  propertyType: string; // "" means all
-  beds: number; // 0 means any
-  baths: number; // 0 means any
+  propertyType: string;
+  beds: number;
+  baths: number;
 }
 
 export default function HomePage() {
@@ -24,7 +23,7 @@ export default function HomePage() {
   const [selectedProperty, setSelectedProperty] = useState<Property | undefined>();
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 
-  // Track filter states
+  // Filter states
   const [filterState, setFilterState] = useState<FilterState>({
     forRent: false,
     minPrice: 0,
@@ -34,10 +33,10 @@ export default function HomePage() {
     baths: 0,
   });
 
-  // Add Property modal
+  // Add property modal
   const [addModalOpen, setAddModalOpen] = useState(false);
 
-  // Handle property selection from sidebar or marker
+  // Handle property selection
   const handleSelectProperty = (prop: Property) => {
     setSelectedProperty(prop);
     setDetailsModalOpen(true);
@@ -48,18 +47,23 @@ export default function HomePage() {
     setSelectedProperty(undefined);
   };
 
-  // Filter the real-time "properties"
-  const filteredProperties = properties.filter((prop) => {
-    if (filterState.forRent && !prop.forRent) return false;
-    if (!filterState.forRent && prop.forRent) return false; // if you only want "for sale" here
-    if (prop.price < filterState.minPrice) return false;
-    if (prop.price > filterState.maxPrice) return false;
-    if (filterState.propertyType && prop.propertyType !== filterState.propertyType)
-      return false;
-    if (prop.bedrooms < filterState.beds) return false;
-    if (prop.bathrooms < filterState.baths) return false;
+  // Filtering
+  const filteredProperties = properties.filter((p) => {
+    if (filterState.forRent && !p.forRent) return false;
+    if (!filterState.forRent && p.forRent) return false;
+    if (p.price < filterState.minPrice) return false;
+    if (p.price > filterState.maxPrice) return false;
+    if (filterState.propertyType && p.propertyType !== filterState.propertyType) return false;
+    if (p.bedrooms < filterState.beds) return false;
+    if (p.bathrooms < filterState.baths) return false;
     return true;
   });
+
+  // For the search bar
+  const [mapCenter, setMapCenter] = useState({ lat: 34.03356615, lng: -118.7542039 });
+  const handlePlaceSelected = (lat: number, lng: number) => {
+    setMapCenter({ lat, lng });
+  };
 
   if (loading) {
     return (
@@ -75,10 +79,12 @@ export default function HomePage() {
         filterState={filterState}
         setFilterState={setFilterState}
         onAddPropertyClick={() => setAddModalOpen(true)}
+        onPlaceSelected={(lat, lng) => handlePlaceSelected(lat, lng)}
       />
 
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar
+        {/* 2/5 left side = the property list, 3/5 right side = map */}
+        <PropertyList
           properties={filteredProperties}
           selectedProperty={selectedProperty}
           onSelect={handleSelectProperty}
@@ -89,11 +95,11 @@ export default function HomePage() {
             properties={filteredProperties}
             selectedProperty={selectedProperty}
             onMarkerClick={handleSelectProperty}
+            mapCenter={mapCenter}
           />
         </div>
       </div>
 
-      {/* Property details modal */}
       {selectedProperty && (
         <PropertyDetailsModal
           open={detailsModalOpen}
@@ -102,7 +108,6 @@ export default function HomePage() {
         />
       )}
 
-      {/* Add or Edit modal */}
       <AddEditPropertyModal
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}

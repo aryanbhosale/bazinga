@@ -1,20 +1,17 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Roboto } from "next/font/google";
 
 export const metadata = {
   title: "Bazinga Properties",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const roboto = Roboto({ subsets: ["latin"], weight: ["300", "400", "500"] });
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-theme="emerald">
-      <body className="min-h-screen bg-base-100">
-        {children}
-      </body>
+    <html lang="en" className={roboto.className} data-theme="light">
+      <body>{children}</body>
     </html>
   );
 }

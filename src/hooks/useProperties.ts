@@ -1,13 +1,13 @@
-"use client"; // so we can use it in client components
+"use client";
 
 import { useState, useEffect } from "react";
 import { db } from "../../firebaseConfig";
 import {
   collection,
-  getDocs,
   addDoc,
   doc,
   updateDoc,
+  onSnapshot,
   query,
   orderBy,
 } from "firebase/firestore";
@@ -17,67 +17,57 @@ export default function useProperties() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const collectionRef = collection(db, "properties");
+  // Real-time listener
+  useEffect(() => {
+    const colRef = collection(db, "properties");
+    // For an initial default sort, say by creation time descending
+    const q = query(colRef, orderBy("createdAt", "desc"));
 
-  const fetchProperties = async () => {
-    setLoading(true);
-    const q = query(collectionRef, orderBy("createdAt", "desc")); 
-    // By default, fetch in "newest" order initially
-    console.log("HIIIIIIIIIIIIII")
-    const snapshot = await getDocs(q);
-    const data: Property[] = snapshot.docs.map((d) => {
-      const docData = d.data();
-      return {
-        id: d.id,
-        title: docData.title,
-        description: docData.description,
-        price: docData.price,
-        bedrooms: docData.bedrooms,
-        bathrooms: docData.bathrooms,
-        squareFeet: docData.squareFeet,
-        propertyType: docData.propertyType,
-        forRent: docData.forRent,
-        lat: docData.lat,
-        lng: docData.lng,
-        imageUrl: docData.imageUrl,
-        createdAt: docData.createdAt || 0,
-      };
-    });
-    setProperties(data);
-    setLoading(false);
-  };
+    // onSnapshot will automatically update 'properties' whenever Firestore changes
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data: Property[] = snapshot.docs.map((docSnap) => {
+          const d = docSnap.data();
+          return {
+            id: docSnap.id,
+            title: d.title,
+            description: d.description,
+            price: d.price,
+            bedrooms: d.bedrooms,
+            bathrooms: d.bathrooms,
+            squareFeet: d.squareFeet,
+            propertyType: d.propertyType,
+            forRent: d.forRent,
+            lat: d.lat,
+            lng: d.lng,
+            imageUrl: d.imageUrl,
+            createdAt: d.createdAt || 0,
+          };
+        });
+        setProperties(data);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Firestore onSnapshot error:", err);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   const addProperty = async (newProp: Omit<Property, "id" | "createdAt">) => {
     const toAdd = {
       ...newProp,
       createdAt: Date.now(),
     };
-    await addDoc(collectionRef, toAdd);
-    await fetchProperties();
+    await addDoc(collection(db, "properties"), toAdd);
   };
 
   const updateProperty = async (id: string, updated: Partial<Property>) => {
-    const ref = doc(db, "properties", id);
-    // do not overwrite existing createdAt if not provided
-    const finalData: Partial<Property> = {
-      ...updated,
-    };
-    await updateDoc(ref, finalData);
-    await fetchProperties();
+    await updateDoc(doc(db, "properties", id), updated);
   };
 
-  // Load initial data
-  useEffect(() => {
-    fetchProperties();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return {
-    properties,
-    loading,
-    addProperty,
-    updateProperty,
-    fetchProperties,
-    setProperties,
-  };
+  return { properties, loading, addProperty, updateProperty };
 }

@@ -1,117 +1,112 @@
 "use client";
 
-import { LoadScript } from "@react-google-maps/api";
-import { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
-import SearchBar from "../components/SearchBar";
-import Filters, { SortOption } from "../components/Filters";
-import Sidebar from "../components/Sidebar";
-import MapView from "../components/MapView";
-import PropertyDetailsModal from "../components/PropertyDetailsModal";
-import AddEditPropertyModal from "../components/AddEditPropertyModal";
+import { useState } from "react";
 import useProperties from "../hooks/useProperties";
 import { Property } from "../utils/types";
+import Navbar from "../components/Navbar";
+import MapView from "../components/MapView";
+import Sidebar from "../components/Sidebar";
+import PropertyDetailsModal from "../components/PropertyDetailsModal";
+import AddEditPropertyModal from "../components/AddEditPropertyModal";
+
+// We'll store the user's filter selections here:
+export interface FilterState {
+  forRent: boolean;
+  minPrice: number;
+  maxPrice: number;
+  propertyType: string; // "" means all
+  beds: number; // 0 means any
+  baths: number; // 0 means any
+}
 
 export default function HomePage() {
-  const {
-    properties,
-    loading,
-    // addProperty, // not needed here because we open AddEditPropertyModal
-    // updateProperty, // used in the modal
-    fetchProperties,
-  } = useProperties();
+  const { properties, loading } = useProperties();
+  const [selectedProperty, setSelectedProperty] = useState<Property | undefined>();
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 
-  const [selectedProperty, setSelectedProperty] = useState<Property | undefined>(
-    undefined
-  );
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [sortOption, setSortOption] = useState<SortOption>("newest");
-  const [filteredProps, setFilteredProps] = useState<Property[]>([]);
+  // Track filter states
+  const [filterState, setFilterState] = useState<FilterState>({
+    forRent: false,
+    minPrice: 0,
+    maxPrice: 999999999,
+    propertyType: "",
+    beds: 0,
+    baths: 0,
+  });
+
+  // Add Property modal
   const [addModalOpen, setAddModalOpen] = useState(false);
 
-  // When a marker or sidebar item is clicked
-  const handlePropertySelect = (prop: Property) => {
+  // Handle property selection from sidebar or marker
+  const handleSelectProperty = (prop: Property) => {
     setSelectedProperty(prop);
-    setShowDetailsModal(true);
+    setDetailsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setShowDetailsModal(false);
+  const closeDetailsModal = () => {
+    setDetailsModalOpen(false);
     setSelectedProperty(undefined);
   };
 
-  // Sort the properties client‐side according to sortOption
-  useEffect(() => {
-    let sorted = [...properties];
-    if (sortOption === "newest") {
-      sorted.sort((a, b) => b.createdAt - a.createdAt);
-    } else if (sortOption === "oldest") {
-      sorted.sort((a, b) => a.createdAt - b.createdAt);
-    } else if (sortOption === "price_desc") {
-      sorted.sort((a, b) => b.price - a.price);
-    } else if (sortOption === "price_asc") {
-      sorted.sort((a, b) => a.price - b.price);
-    } else if (sortOption === "square_feet") {
-      sorted.sort((a, b) => b.squareFeet - a.squareFeet);
-    }
-    setFilteredProps(sorted);
-  }, [properties, sortOption]);
-
-  // If user picks a place from the search bar
-  const handlePlaceSelected = (lat: number, lng: number, address: string) => {
-    // center map on the place or do something else
-    // For demonstration, we won't do anything here except log it
-    console.log("Place selected:", address, lat, lng);
-  };
+  // Filter the real-time "properties"
+  const filteredProperties = properties.filter((prop) => {
+    if (filterState.forRent && !prop.forRent) return false;
+    if (!filterState.forRent && prop.forRent) return false; // if you only want "for sale" here
+    if (prop.price < filterState.minPrice) return false;
+    if (prop.price > filterState.maxPrice) return false;
+    if (filterState.propertyType && prop.propertyType !== filterState.propertyType)
+      return false;
+    if (prop.bedrooms < filterState.beds) return false;
+    if (prop.bathrooms < filterState.baths) return false;
+    return true;
+  });
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <span className="loading loading-spinner text-primary"></span>
+      </div>
+    );
   }
 
   return (
-    <LoadScript
-      googleMapsApiKey={process.env.NEXT_PUBLIC_MAPS_API_KEY || ""}
-      libraries={["places"]} // or ["places", "geometry", etc.], if needed
-    >
-      <div className="flex flex-col h-screen">
-        <Navbar />
-        <div className="p-2 flex space-x-2 items-center">
-          <SearchBar onPlaceSelected={handlePlaceSelected} />
-          <Filters sortOption={sortOption} setSortOption={setSortOption} />
-          <button className="btn btn-primary" onClick={() => setAddModalOpen(true)}>
-            Add Property
-          </button>
-        </div>
-        <div className="flex flex-1 overflow-hidden">
-          <div className="hidden md:block w-80 shrink-0 h-full">
-            <Sidebar
-              properties={filteredProps}
-              selectedProperty={selectedProperty}
-              onSelect={handlePropertySelect}
-            />
-          </div>
-          <div className="flex-1 relative h-full">
-            <MapView
-              properties={filteredProps}
-              selectedProperty={selectedProperty}
-              onMarkerClick={handlePropertySelect}
-            />
-          </div>
-        </div>
+    <div className="flex flex-col h-screen">
+      <Navbar
+        filterState={filterState}
+        setFilterState={setFilterState}
+        onAddPropertyClick={() => setAddModalOpen(true)}
+      />
 
-        {selectedProperty && (
-          <PropertyDetailsModal
-            open={showDetailsModal}
-            onClose={handleCloseModal}
-            property={selectedProperty}
-          />
-        )}
-
-        <AddEditPropertyModal
-          open={addModalOpen}
-          onClose={() => setAddModalOpen(false)}
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar
+          properties={filteredProperties}
+          selectedProperty={selectedProperty}
+          onSelect={handleSelectProperty}
         />
+
+        <div className="flex-1 relative">
+          <MapView
+            properties={filteredProperties}
+            selectedProperty={selectedProperty}
+            onMarkerClick={handleSelectProperty}
+          />
+        </div>
       </div>
-    </LoadScript>
+
+      {/* Property details modal */}
+      {selectedProperty && (
+        <PropertyDetailsModal
+          open={detailsModalOpen}
+          onClose={closeDetailsModal}
+          property={selectedProperty}
+        />
+      )}
+
+      {/* Add or Edit modal */}
+      <AddEditPropertyModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+      />
+    </div>
   );
 }

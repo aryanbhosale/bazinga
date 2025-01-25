@@ -2,12 +2,12 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.SENDER_ID,
-  appId: process.env.APP_ID,
+  apiKey: "AIzaSyA3dB36ulPWZayKrgEBafBgI_HBINGjYWU",
+  authDomain: "bazinga-fb46b.firebaseapp.com",
+  projectId: "bazinga-fb46b",
+  storageBucket: "bazinga-fb46b.firebasestorage.app",
+  messagingSenderId: "1031632979859",
+  appId: "1:1031632979859:web:56a34fa419ad0e47930a66",
 };
 
 const app = initializeApp(firebaseConfig);

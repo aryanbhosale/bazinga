@@ -19,16 +19,14 @@ export default function PropertyDetailsModal({
 
   if (!open) return null;
 
-  const handleClose = () => {
-    setEditMode(false);
-    onClose();
-  };
-
   if (editMode) {
     return (
       <AddEditPropertyModal
         open={open}
-        onClose={handleClose}
+        onClose={() => {
+          setEditMode(false);
+          onClose(); // or keep open after saving
+        }}
         existingProperty={property}
       />
     );
@@ -36,7 +34,7 @@ export default function PropertyDetailsModal({
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box relative">
+      <div className="modal-box relative max-w-lg">
         <button
           className="btn btn-sm btn-circle absolute right-2 top-2"
           onClick={onClose}
@@ -45,30 +43,38 @@ export default function PropertyDetailsModal({
         </button>
         <h3 className="text-lg font-bold mb-2">{property.title}</h3>
         <img
-          src={property.imageUrl}
+          src={property.imageUrl || "/placeholder.png"}
           alt="Property"
           className="w-full h-48 object-cover mb-2"
         />
         <p>{property.description}</p>
-        <p className="mt-2">
-          <strong>Price:</strong> ${property.price.toLocaleString()}
-        </p>
-        <p>
-          <strong>Bedrooms:</strong> {property.bedrooms}
-        </p>
-        <p>
-          <strong>Bathrooms:</strong> {property.bathrooms}
-        </p>
-        <p>
-          <strong>Square Feet:</strong> {property.squareFeet.toLocaleString()}
-        </p>
-        <p>
-          <strong>Latitude / Longitude:</strong> {property.lat} / {property.lng}
-        </p>
-        <p>
-          <strong>For Rent:</strong> {property.forRent ? "Yes" : "No"}
-        </p>
-
+        <div className="mt-2 text-sm space-y-1">
+          <div>
+            <span className="font-semibold">Price:</span>{" "}
+            ${property.price.toLocaleString()}
+          </div>
+          <div>
+            <span className="font-semibold">Bedrooms:</span> {property.bedrooms}
+          </div>
+          <div>
+            <span className="font-semibold">Bathrooms:</span> {property.bathrooms}
+          </div>
+          <div>
+            <span className="font-semibold">Square Feet:</span>{" "}
+            {property.squareFeet.toLocaleString()}
+          </div>
+          <div>
+            <span className="font-semibold">Property Type:</span>{" "}
+            {property.propertyType}
+          </div>
+          <div>
+            <span className="font-semibold">For Rent?</span>{" "}
+            {property.forRent ? "Yes" : "No"}
+          </div>
+          <div>
+            <span className="font-semibold">Location:</span> {property.lat}, {property.lng}
+          </div>
+        </div>
         <div className="modal-action">
           <button className="btn" onClick={() => setEditMode(true)}>
             Edit

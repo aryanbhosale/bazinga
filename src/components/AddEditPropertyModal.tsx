@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Property } from "../utils/types";
 import useProperties from "../hooks/useProperties";
+import { Property } from "../utils/types";
 
 interface AddEditPropertyModalProps {
   open: boolean;
   onClose: () => void;
-  existingProperty?: Property; 
+  existingProperty?: Property;
 }
 
 export default function AddEditPropertyModal({
@@ -20,18 +20,12 @@ export default function AddEditPropertyModal({
   const isEdit = !!existingProperty;
 
   const [title, setTitle] = useState(existingProperty?.title || "");
-  const [description, setDescription] = useState(
-    existingProperty?.description || ""
-  );
+  const [description, setDescription] = useState(existingProperty?.description || "");
   const [price, setPrice] = useState(existingProperty?.price || 0);
   const [bedrooms, setBedrooms] = useState(existingProperty?.bedrooms || 0);
   const [bathrooms, setBathrooms] = useState(existingProperty?.bathrooms || 0);
-  const [squareFeet, setSquareFeet] = useState(
-    existingProperty?.squareFeet || 0
-  );
-  const [propertyType, setPropertyType] = useState(
-    existingProperty?.propertyType || "Residential"
-  );
+  const [squareFeet, setSquareFeet] = useState(existingProperty?.squareFeet || 0);
+  const [propertyType, setPropertyType] = useState(existingProperty?.propertyType || "Residential");
   const [lat, setLat] = useState(existingProperty?.lat || 34.0);
   const [lng, setLng] = useState(existingProperty?.lng || -118.7);
   const [imageUrl, setImageUrl] = useState(existingProperty?.imageUrl || "");
@@ -74,19 +68,16 @@ export default function AddEditPropertyModal({
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box w-11/12 max-w-2xl">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg">
-            {isEdit ? "Edit Property" : "Add New Property"}
-          </h3>
-          <button className="btn btn-sm btn-circle" onClick={onClose}>
-            ✕
-          </button>
-        </div>
-
+      <div className="modal-box relative">
+        <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={onClose}>
+          ✕
+        </button>
+        <h3 className="text-lg font-bold mb-4">
+          {isEdit ? "Edit Property" : "Add New Property"}
+        </h3>
         <div className="space-y-2">
           <label className="block">
-            <span className="text-sm">Title</span>
+            <span>Title</span>
             <input
               className="input input-bordered w-full"
               value={title}
@@ -94,7 +85,7 @@ export default function AddEditPropertyModal({
             />
           </label>
           <label className="block">
-            <span className="text-sm">Description</span>
+            <span>Description</span>
             <textarea
               className="textarea textarea-bordered w-full"
               value={description}
@@ -102,7 +93,7 @@ export default function AddEditPropertyModal({
             />
           </label>
           <label className="block">
-            <span className="text-sm">Price</span>
+            <span>Price</span>
             <input
               type="number"
               className="input input-bordered w-full"
@@ -112,7 +103,7 @@ export default function AddEditPropertyModal({
           </label>
           <div className="flex space-x-2">
             <label className="block flex-1">
-              <span className="text-sm">Bedrooms</span>
+              <span>Bedrooms</span>
               <input
                 type="number"
                 className="input input-bordered w-full"
@@ -121,7 +112,7 @@ export default function AddEditPropertyModal({
               />
             </label>
             <label className="block flex-1">
-              <span className="text-sm">Bathrooms</span>
+              <span>Bathrooms</span>
               <input
                 type="number"
                 className="input input-bordered w-full"
@@ -131,7 +122,7 @@ export default function AddEditPropertyModal({
             </label>
           </div>
           <label className="block">
-            <span className="text-sm">Square Feet</span>
+            <span>Square Feet</span>
             <input
               type="number"
               className="input input-bordered w-full"
@@ -140,7 +131,7 @@ export default function AddEditPropertyModal({
             />
           </label>
           <label className="block">
-            <span className="text-sm">Property Type</span>
+            <span>Property Type</span>
             <select
               className="select select-bordered w-full"
               value={propertyType}
@@ -154,7 +145,7 @@ export default function AddEditPropertyModal({
           </label>
           <div className="flex space-x-2">
             <label className="block flex-1">
-              <span className="text-sm">Latitude</span>
+              <span>Latitude</span>
               <input
                 type="number"
                 className="input input-bordered w-full"
@@ -163,7 +154,7 @@ export default function AddEditPropertyModal({
               />
             </label>
             <label className="block flex-1">
-              <span className="text-sm">Longitude</span>
+              <span>Longitude</span>
               <input
                 type="number"
                 className="input input-bordered w-full"
@@ -173,7 +164,7 @@ export default function AddEditPropertyModal({
             </label>
           </div>
           <label className="block">
-            <span className="text-sm">Image URL</span>
+            <span>Image URL</span>
             <input
               type="text"
               className="input input-bordered w-full"
@@ -182,7 +173,7 @@ export default function AddEditPropertyModal({
             />
           </label>
           <label className="flex items-center space-x-2">
-            <span className="text-sm">For Rent?</span>
+            <span>For Rent?</span>
             <input
               type="checkbox"
               className="checkbox"
@@ -191,9 +182,8 @@ export default function AddEditPropertyModal({
             />
           </label>
         </div>
-
         <div className="modal-action">
-          <button className="btn" onClick={handleSubmit}>
+          <button className="btn btn-primary" onClick={handleSubmit}>
             Save
           </button>
         </div>

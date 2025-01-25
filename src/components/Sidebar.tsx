@@ -1,7 +1,6 @@
 "use client";
 
 import { Property } from "../utils/types";
-import PropertyCard from "./PropertyCard";
 
 interface SidebarProps {
   properties: Property[];
@@ -15,21 +14,33 @@ export default function Sidebar({
   onSelect,
 }: SidebarProps) {
   return (
-    <div className="w-full md:w-80 bg-base-100 border-r border-base-200 overflow-y-auto h-full">
-      <div className="p-4 font-bold text-lg border-b border-base-200">
-        Properties
-      </div>
-      {properties.map((p) => {
-        const isSelected = p.id === selectedProperty?.id;
+    <div className="w-full md:w-80 bg-base-100 border-r border-base-200 overflow-y-auto h-full p-2">
+      <h2 className="text-lg font-bold mb-2">Properties</h2>
+      {properties.map((prop) => {
+        const isActive = prop.id === selectedProperty?.id;
         return (
           <div
-            key={p.id}
-            onClick={() => onSelect(p)}
-            className={`cursor-pointer hover:bg-base-200 ${
-              isSelected ? "bg-base-200" : ""
-            }`}
+            key={prop.id}
+            onClick={() => onSelect(prop)}
+            className={`card card-compact mb-2 cursor-pointer shadow-sm 
+              border border-base-200 hover:shadow-lg transition 
+              ${isActive ? "ring ring-primary ring-offset-2" : ""}`}
           >
-            <PropertyCard property={p} />
+            <figure>
+              <img
+                src={prop.imageUrl || "/placeholder.png"}
+                alt="Property"
+                className="h-32 w-full object-cover"
+              />
+            </figure>
+            <div className="card-body p-3">
+              <h3 className="card-title text-sm">{prop.title}</h3>
+              <p className="text-xs text-gray-500">{prop.description}</p>
+              <p className="text-xs font-semibold mt-1">
+                ${prop.price.toLocaleString()} | {prop.bedrooms} BR |{" "}
+                {prop.bathrooms} BA | {prop.squareFeet.toLocaleString()} sqft
+              </p>
+            </div>
           </div>
         );
       })}

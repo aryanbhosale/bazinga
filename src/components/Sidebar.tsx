@@ -1,4 +1,3 @@
-// src/components/Sidebar.tsx
 "use client";
 
 import { Property } from "../utils/types";

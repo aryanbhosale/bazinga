@@ -43,6 +43,7 @@ export default function useProperties() {
             lng: d.lng,
             imageUrl: d.imageUrl,
             createdAt: d.createdAt || 0,
+            address: d.address || "",
           };
         });
         setProperties(data);

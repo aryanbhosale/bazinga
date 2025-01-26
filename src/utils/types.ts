@@ -12,5 +12,6 @@ export interface Property {
     lng: number;
     imageUrl: string;
     createdAt: number;    // store timestamp to handle newest/oldest sorting
+    address?: string;
   }
   

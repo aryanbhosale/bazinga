@@ -1,14 +1,15 @@
 "use client";
 
 import { Autocomplete, useJsApiLoader } from "@react-google-maps/api";
-import { googleMapsLibraries } from "../config/googleMapsConfig"; //
+import { googleMapsLibraries } from "../config/googleMapsConfig";
 import { useRef } from "react";
 
 interface SearchBarProps {
   onPlaceSelected: (lat: number, lng: number, address: string) => void;
+  inputClass?: string; // custom
 }
 
-export default function SearchBar({ onPlaceSelected }: SearchBarProps) {
+export default function SearchBar({ onPlaceSelected, inputClass }: SearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
@@ -39,7 +40,7 @@ export default function SearchBar({ onPlaceSelected }: SearchBarProps) {
         ref={inputRef}
         type="text"
         placeholder="Loading..."
-        className="input input-bordered w-48 md:w-60"
+        className={inputClass || "input input-bordered w-48 md:w-60"}
         disabled
       />
     );
@@ -51,7 +52,7 @@ export default function SearchBar({ onPlaceSelected }: SearchBarProps) {
         ref={inputRef}
         type="text"
         placeholder="Search address..."
-        className="input input-bordered w-48 md:w-60"
+        className={inputClass || "input input-bordered w-48 md:w-60"}
       />
     </Autocomplete>
   );

@@ -1,17 +1,25 @@
-import type { Metadata } from "next";
 import "./globals.css";
-import { Roboto } from "next/font/google";
+import { Poppins } from "next/font/google";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["300", "400", "600", "700"],
+});
 
 export const metadata = {
   title: "Bazinga Properties",
 };
 
-const roboto = Roboto({ subsets: ["latin"], weight: ["300", "400", "500"] });
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={roboto.className} data-theme="light">
-      <body>{children}</body>
+    <html lang="en" className={poppins.className} data-theme="light">
+      <body className="bg-base-100 text-base-content min-h-screen">
+        {children}
+      </body>
     </html>
   );
 }

@@ -1,15 +1,17 @@
-// src/components/Navbar.tsx
 "use client";
 
 import { Dispatch, SetStateAction } from "react";
 import { FilterState } from "../app/page";
 import SearchBar from "./SearchBar";
+import { SortOption } from "./Filters";
 
 interface NavbarProps {
   filterState: FilterState;
   setFilterState: Dispatch<SetStateAction<FilterState>>;
   onAddPropertyClick: () => void;
   onPlaceSelected: (lat: number, lng: number, address: string) => void;
+  sortOption: SortOption;
+  setSortOption: Dispatch<SetStateAction<SortOption>>;
 }
 
 export default function Navbar({

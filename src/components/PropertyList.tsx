@@ -2,6 +2,7 @@
 
 import { Property } from "../utils/types";
 import Image from "next/image";
+import AddressDisplay from "./AddressDisplay";
 
 interface PropertyListProps {
   properties: Property[];
@@ -16,16 +17,17 @@ export default function PropertyList({
 }: PropertyListProps) {
   return (
     <div className="w-full md:w-2/5 bg-base-100 border-r border-base-200 overflow-y-auto">
-      {/* Header */}
+      {/* Title & Count */}
       <div className="p-4 border-b border-base-200">
         <h2 className="text-2xl font-bold mb-1">Malibu, CA Real Estate &amp; Homes for Sale</h2>
         <p className="text-sm text-gray-500">{properties.length} results</p>
       </div>
 
-      {/* Grid of cards, 2 columns on md+ */}
+      {/* 2-col grid on md+ */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
         {properties.map((prop) => {
           const isActive = prop.id === selectedProperty?.id;
+
           return (
             <div
               key={prop.id}
@@ -34,12 +36,12 @@ export default function PropertyList({
                 isActive ? "ring ring-primary ring-offset-2" : ""
               }`}
             >
-              {/* “Active” badge in top‐left */}
+              {/* “Active” badge in top-left */}
               <span className="absolute top-2 left-2 px-2 py-1 bg-neutral text-white text-xs rounded">
                 Active
               </span>
 
-              {/* Heart icon in top‐right */}
+              {/* Heart icon in top-right */}
               <span className="absolute top-2 right-2 text-white">
                 <button className="btn btn-sm btn-circle btn-ghost text-white">
                   <svg
@@ -59,9 +61,8 @@ export default function PropertyList({
                 </button>
               </span>
 
-              {/* Property image */}
-              <div className="w-full h-40 relative">
-                {/* Next.js Image optional; you can do <img> if you prefer */}
+              {/* Image */}
+              <div className="w-full h-48 relative">
                 <Image
                   src={prop.imageUrl || "/placeholder.png"}
                   alt="Property"
@@ -72,16 +73,20 @@ export default function PropertyList({
 
               {/* Info */}
               <div className="p-3 space-y-1">
-                <p className="font-semibold text-lg">
+                <p className="font-semibold text-lg leading-tight">
                   ${prop.price.toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-600">
-                  {prop.bedrooms}bd • {prop.bathrooms}ba • {prop.squareFeet} sqft
+                  {prop.bedrooms}bd • {prop.bathrooms}ba • {prop.squareFeet.toLocaleString()} sqft
                 </p>
-                {/* You can show address if you store it, or use lat/lng. */}
-                <p className="text-sm text-gray-500">{prop.description}</p>
-                {/* Example: MLS # if you have it */}
-                {/* <p className="text-xs text-gray-400">MLS #: {prop.mlsNumber}</p> */}
+                {/* Address or lat/lng */}
+                <p className="text-sm text-gray-500">
+                  {prop.address ? (
+                    prop.address
+                  ) : (
+                    <AddressDisplay lat={prop.lat} lng={prop.lng} />
+                  )}
+                </p>
               </div>
             </div>
           );

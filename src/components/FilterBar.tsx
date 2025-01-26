@@ -34,7 +34,7 @@ export default function FilterBar({
           onPlaceSelected={(lat, lng) => {
             onPlaceSelected(lat, lng);
           }}
-          // We'll make the input bigger with a custom class
+          // Bigger input with a custom class
           inputClass="input input-bordered w-full text-base"
         />
       </div>

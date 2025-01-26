@@ -9,7 +9,9 @@ import Sidebar from "../components/Sidebar";
 import MapView from "../components/MapView";
 import PropertyDetailsModal from "../components/PropertyDetailsModal";
 import AddEditPropertyModal from "../components/AddEditPropertyModal";
-import { SortOption } from "../components/Filters"; // or define it here
+import { SortOption } from "../components/Filters";
+import MobileFiltersModal from "../components/MobileFiltersModal";
+import useIsMobile from "../hooks/useIsMobile";
 
 export interface FilterState {
   forRent: boolean;
@@ -22,10 +24,9 @@ export interface FilterState {
 
 export default function HomePage() {
   const { properties, loading } = useProperties();
-  const [selectedProperty, setSelectedProperty] = useState<Property | undefined>();
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const isMobile = useIsMobile(768);
 
-  // Basic filter states
+  // Filter + Sort states
   const [filterState, setFilterState] = useState<FilterState>({
     forRent: false,
     minPrice: 0,
@@ -34,18 +35,24 @@ export default function HomePage() {
     beds: 0,
     baths: 0,
   });
-
-  // Sorting
   const [sortOption, setSortOption] = useState<SortOption>("newest");
 
-  // Add property modal
+  // Map + polygon
+  const [mapCenter, setMapCenter] = useState({ lat: 34.03356615, lng: -118.7542039 });
+  const [polygonCoords, setPolygonCoords] = useState<google.maps.LatLngLiteral[] | null>(null);
+
+  // Show/hide map on mobile
+  const [mapVisible, setMapVisible] = useState(false);
+
+  // Show/hide the Add property modal
   const [addModalOpen, setAddModalOpen] = useState(false);
 
-  // Map center
-  const [mapCenter, setMapCenter] = useState({ lat: 34.03356615, lng: -118.7542039 });
+  // Show/hide property details
+  const [selectedProperty, setSelectedProperty] = useState<Property | undefined>();
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 
-  // Polygon coords for drawing
-  const [polygonCoords, setPolygonCoords] = useState<google.maps.LatLngLiteral[] | null>(null);
+  // Show/hide the Filters modal on mobile
+  const [filtersModalOpen, setFiltersModalOpen] = useState(false);
 
   const handleSelectProperty = (prop: Property) => {
     setSelectedProperty(prop);
@@ -57,7 +64,7 @@ export default function HomePage() {
     setSelectedProperty(undefined);
   };
 
-  // 1) filter
+  // Filter
   const filtered = properties.filter((p) => {
     if (filterState.forRent && !p.forRent) return false;
     if (!filterState.forRent && p.forRent) return false;
@@ -69,12 +76,10 @@ export default function HomePage() {
     return true;
   });
 
-  // 2) polygon
-  const insidePolygonProps = polygonCoords
-    ? filterByPolygon(filtered, polygonCoords)
-    : filtered;
+  // Polygon filter
+  const insidePolygonProps = polygonCoords ? filterByPolygon(filtered, polygonCoords) : filtered;
 
-  // 3) sort
+  // Sort
   const finalProps = applySort(insidePolygonProps, sortOption);
 
   if (loading) {
@@ -88,16 +93,28 @@ export default function HomePage() {
   return (
     <div className="flex flex-col h-screen">
       <TopBar />
-    <div className="z-50">
-      <FilterBar
-        filterState={filterState}
-        setFilterState={setFilterState}
-        onAddPropertyClick={() => setAddModalOpen(true)}
-        onPlaceSelected={(lat, lng) => setMapCenter({ lat, lng })}
-      />
-    </div>
+
+      {/* If not mobile, show the normal FilterBar. Otherwise show a single "Filters" button */}
+      {isMobile ? (
+        <div className="px-4 py-2 border-b border-base-200 flex items-center justify-between">
+          <button className="btn btn-ghost" onClick={() => setFiltersModalOpen(true)}>
+            Filters
+          </button>
+          <button className="btn btn-primary btn-sm" onClick={() => setAddModalOpen(true)}>
+            Add property
+          </button>
+        </div>
+      ) : (
+        <FilterBar
+          filterState={filterState}
+          setFilterState={setFilterState}
+          onAddPropertyClick={() => setAddModalOpen(true)}
+          onPlaceSelected={(lat, lng) => setMapCenter({ lat, lng })}
+        />
+      )}
 
       <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar always visible, even on mobile. (You can hide if you want) */}
         <Sidebar
           properties={finalProps}
           selectedProperty={selectedProperty}
@@ -105,7 +122,9 @@ export default function HomePage() {
           sortOption={sortOption}
           setSortOption={setSortOption}
         />
-        <div className="flex-1 relative">
+
+        {/* Map is hidden on small screens unless user toggles it */}
+        <div className="hidden md:block flex-1 relative">
           <MapView
             properties={finalProps}
             selectedProperty={selectedProperty}
@@ -116,6 +135,34 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* On mobile, toggles the map area */}
+      {isMobile && (
+        <div className="md:hidden p-2 border-t flex justify-center">
+          {mapVisible ? (
+            <div className="relative w-full h-64">
+              <MapView
+                properties={finalProps}
+                selectedProperty={selectedProperty}
+                onMarkerClick={handleSelectProperty}
+                mapCenter={mapCenter}
+                onPolygonDrawn={(coords) => setPolygonCoords(coords.length ? coords : null)}
+              />
+              <button
+                onClick={() => setMapVisible(false)}
+                className="btn btn-sm btn-ghost absolute top-2 right-2 z-50"
+              >
+                Hide Map
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => setMapVisible(true)} className="btn btn-primary">
+              Show Map
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Property details modal */}
       {selectedProperty && (
         <PropertyDetailsModal
           open={detailsModalOpen}
@@ -124,12 +171,21 @@ export default function HomePage() {
         />
       )}
 
+      {/* Add / Edit property */}
       <AddEditPropertyModal open={addModalOpen} onClose={() => setAddModalOpen(false)} />
+
+      {/* Mobile filters modal */}
+      <MobileFiltersModal
+        open={filtersModalOpen}
+        onClose={() => setFiltersModalOpen(false)}
+        filterState={filterState}
+        setFilterState={setFilterState}
+        onPlaceSelected={(lat, lng) => setMapCenter({ lat, lng })}
+      />
     </div>
   );
 }
 
-// your existing sorting logic
 function applySort(props: Property[], sortOption: SortOption): Property[] {
   const sorted = [...props];
   switch (sortOption) {
@@ -152,7 +208,6 @@ function applySort(props: Property[], sortOption: SortOption): Property[] {
   return sorted;
 }
 
-// polygon filter
 function filterByPolygon(props: Property[], coords: google.maps.LatLngLiteral[]): Property[] {
   if (typeof window === "undefined" || !window.google?.maps?.geometry) {
     return props;

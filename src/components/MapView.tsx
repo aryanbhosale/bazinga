@@ -117,7 +117,7 @@ export default function MapView({
       options={{
         mapTypeControl: true,
         mapTypeControlOptions: {
-          position: window.google.maps.ControlPosition.TOP_RIGHT,
+          position: window.google.maps.ControlPosition.BOTTOM_LEFT,
         },
       }}
     >

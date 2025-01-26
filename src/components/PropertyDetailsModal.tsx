@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Property } from "../utils/types";
 import AddEditPropertyModal from "./AddEditPropertyModal";
 
@@ -50,8 +51,11 @@ export default function PropertyDetailsModal({
 
         {/* Image */}
         <div className="relative w-full h-48">
-          <img
+          <Image
             src={property.imageUrl || "/placeholder.png"}
+            fill
+            priority
+            sizes="max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             alt="Property"
             className="w-full h-full object-cover"
           />

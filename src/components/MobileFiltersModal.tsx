@@ -52,7 +52,7 @@ export default function MobileFiltersModal({
       <div className="p-4 flex-1 overflow-auto space-y-4">
         {/* Optional search bar inside the filters */}
         <SearchBar
-          onPlaceSelected={(lat, lng, address) => {
+          onPlaceSelected={(lat, lng) => {
             onPlaceSelected(lat, lng);
           }}
           inputClass="input input-bordered w-full text-base"

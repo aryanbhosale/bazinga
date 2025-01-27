@@ -19,7 +19,7 @@ export default function PropertyList({
     <div className="w-full md:w-2/5 bg-base-100 border-r border-base-200 overflow-y-auto">
       {/* Title & Count */}
       <div className="p-4 border-b border-base-200">
-        <h2 className="text-2xl font-bold mb-1">Malibu, CA Real Estate &amp; Homes for Sale</h2>
+        <h2 className="text-2xl font-bold mb-1">Real Estate &amp; Homes for Sale</h2>
         <p className="text-sm text-gray-500">{properties.length} results</p>
       </div>
 

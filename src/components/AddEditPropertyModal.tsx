@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useProperties from "../hooks/useProperties";
 import { Property } from "../utils/types";
 
@@ -19,22 +19,64 @@ export default function AddEditPropertyModal({
   const isEdit = !!existingProperty;
 
   // Form states
-  const [title, setTitle] = useState(existingProperty?.title || "");
-  const [description, setDescription] = useState(existingProperty?.description || "");
-  const [price, setPrice] = useState(existingProperty?.price || 0);
-  const [bedrooms, setBedrooms] = useState(existingProperty?.bedrooms || 0);
-  const [bathrooms, setBathrooms] = useState(existingProperty?.bathrooms || 0);
-  const [squareFeet, setSquareFeet] = useState(existingProperty?.squareFeet || 0);
-  const [propertyType, setPropertyType] = useState(
-    existingProperty?.propertyType || "Residential"
-  );
-  const [lat, setLat] = useState(existingProperty?.lat || 34.0);
-  const [lng, setLng] = useState(existingProperty?.lng || -118.7);
-  const [imageUrl, setImageUrl] = useState(existingProperty?.imageUrl || "");
-  const [forRent, setForRent] = useState(existingProperty?.forRent || false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState(0);
+  const [bedrooms, setBedrooms] = useState(0);
+  const [bathrooms, setBathrooms] = useState(0);
+  const [squareFeet, setSquareFeet] = useState(0);
+  const [propertyType, setPropertyType] = useState("Residential");
+  const [lat, setLat] = useState(34.0);
+  const [lng, setLng] = useState(-118.7);
+  const [imageUrl, setImageUrl] = useState("");
+  const [forRent, setForRent] = useState(false);
 
-  // We'll store validation errors here
+  // Validation error state
   const [error, setError] = useState<string>("");
+
+  // Reset the form when the modal is opened
+  useEffect(() => {
+    if (open) {
+      if (isEdit && existingProperty) {
+        setTitle(existingProperty.title);
+        setDescription(existingProperty.description);
+        setPrice(existingProperty.price);
+        setBedrooms(existingProperty.bedrooms);
+        setBathrooms(existingProperty.bathrooms);
+        setSquareFeet(existingProperty.squareFeet);
+        setPropertyType(existingProperty.propertyType);
+        setLat(existingProperty.lat);
+        setLng(existingProperty.lng);
+        setImageUrl(existingProperty.imageUrl);
+        setForRent(existingProperty.forRent);
+      } else {
+        setTitle("");
+        setDescription("");
+        setPrice(0);
+        setBedrooms(0);
+        setBathrooms(0);
+        setSquareFeet(0);
+        setPropertyType("Residential");
+        setLat(34.0);
+        setLng(-118.7);
+        setImageUrl("");
+        setForRent(false);
+      }
+      setError(""); // Clear any old errors
+    }
+  }, [open, existingProperty, isEdit]);
+
+  const validateLatLng = (): boolean => {
+    if (lat < -90 || lat > 90) {
+      setError("Latitude must be between -90 and 90.");
+      return false;
+    }
+    if (lng < -180 || lng > 180) {
+      setError("Longitude must be between -180 and 180.");
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = async () => {
     // Simple validation checks
@@ -66,8 +108,11 @@ export default function AddEditPropertyModal({
       setError("Description is required.");
       return;
     }
+    if (!validateLatLng()) {
+      return; // Lat/lng validation failed
+    }
 
-    setError(""); // clear any old errors
+    setError(""); // Clear any old errors
 
     // If all checks pass, either update or add
     try {
@@ -100,7 +145,7 @@ export default function AddEditPropertyModal({
           forRent,
         });
       }
-      onClose();
+      onClose(); // Close modal after successful operation
     } catch (err) {
       console.error("Error saving property:", err);
       setError("Failed to save property. Please try again.");
@@ -201,7 +246,7 @@ export default function AddEditPropertyModal({
 
           <div className="flex space-x-2">
             <label className="block flex-1">
-              <span>Latitude</span>
+              <span>Latitude <span className="text-red-500">*</span></span>
               <input
                 type="number"
                 className="input input-bordered w-full"
@@ -210,7 +255,7 @@ export default function AddEditPropertyModal({
               />
             </label>
             <label className="block flex-1">
-              <span>Longitude</span>
+              <span>Longitude <span className="text-red-500">*</span></span>
               <input
                 type="number"
                 className="input input-bordered w-full"

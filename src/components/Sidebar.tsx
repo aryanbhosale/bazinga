@@ -3,7 +3,7 @@
 import { Property } from "../utils/types";
 import Image from "next/image";
 import AddressDisplay from "./AddressDisplay";
-import { SortOption } from "./Filters"; // or define your own
+import { SortOption } from "./Filters";
 
 interface SidebarProps {
   properties: Property[];
